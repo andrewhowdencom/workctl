@@ -1,0 +1,21 @@
+version: '3'
+
+tasks:
+  build:
+    desc: Build the application
+    cmds:
+      - go build -o workctl cmd/workctl/main.go
+
+  test:
+    desc: Run tests
+    cmds:
+      - go test ./...
+
+  lint:
+    desc: Run linters
+    cmds:
+      - go vet ./...
+
+  validate:
+    desc: Validate the project
+    deps: [lint, test, build]
