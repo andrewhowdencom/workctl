@@ -11,10 +11,22 @@ tasks:
     cmds:
       - go test ./...
 
+  setup:
+    desc: Install required tools and dependencies
+    cmds:
+      - go mod download
+      - go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.5
+
   lint:
     desc: Run linters
+    vars:
+      GOBIN:
+        sh: go env GOBIN
+      GOPATH:
+        sh: go env GOPATH
+      LINT_BIN: "{{if .GOBIN}}{{.GOBIN}}{{else}}{{.GOPATH}}/bin{{end}}/golangci-lint"
     cmds:
-      - go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.5 run
+      - "{{.LINT_BIN}} run"
 
   validate:
     desc: Validate the project
