@@ -24,7 +24,13 @@ tasks:
         sh: go env GOBIN
       GOPATH:
         sh: go env GOPATH
-      LINT_BIN: "{{if .GOBIN}}{{.GOBIN}}{{else}}{{.GOPATH}}/bin{{end}}/golangci-lint"
+      LINT_BIN:
+        sh: |
+          if command -v golangci-lint >/dev/null 2>&1; then
+            echo "golangci-lint"
+          else
+            echo "{{if .GOBIN}}{{.GOBIN}}{{else}}{{.GOPATH}}/bin{{end}}/golangci-lint"
+          fi
     cmds:
       - "{{.LINT_BIN}} run"
 

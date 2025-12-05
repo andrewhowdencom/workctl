@@ -22,5 +22,11 @@ jobs:
         with:
           version: 3.x
 
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.64.5
+          install-only: true
+
       - name: Validate
         run: task validate
