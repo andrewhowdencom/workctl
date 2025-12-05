@@ -1,0 +1,35 @@
+openapi: 3.0.3
+info:
+  title: Workctl API
+  version: 1.0.0
+  description: API for workctl
+paths:
+  /healthz:
+    get:
+      summary: Health check
+      operationId: healthCheck
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: OK
+  /v1/github/webhooks:
+    post:
+      summary: Receive GitHub webhooks
+      operationId: receiveGithubWebhook
+      requestBody:
+        description: GitHub Webhook Payload
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+        required: true
+      responses:
+        '200':
+          description: Webhook received successfully
+        '401':
+          description: Invalid signature
