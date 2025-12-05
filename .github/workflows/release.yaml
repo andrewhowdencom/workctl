@@ -9,15 +9,23 @@ env:
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+      id-token: write
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: 'projects/422614898574/locations/global/workloadIdentityPools/github/providers/github'
+          service_account: 'github-actions-runner@andrewhowdencom.iam.gserviceaccount.com'
 
       - name: Log in to the Container registry
         uses: docker/login-action@v3
@@ -26,11 +34,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Log in to GAR
+        uses: docker/login-action@v3
+        with:
+          registry: europe-west10-docker.pkg.dev
+          username: oauth2accesstoken
+          password: ${{ steps.auth.outputs.access_token }}
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            europe-west10-docker.pkg.dev/andrewhowdencom/workctl/workctl
           tags: |
             type=semver,pattern={{version}}
             type=raw,value=latest,enable=${{ !github.event.release.prerelease }}
@@ -42,3 +59,14 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: deploy/prod/terraform
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var="image_tag=${{ steps.meta.outputs.version }}"
+        working-directory: deploy/prod/terraform
