@@ -1,4 +1,4 @@
-package cli
+package health
 
 import (
 	"net/http"
@@ -13,7 +13,7 @@ func TestHealthCheckHandler(t *testing.T) {
 	}
 
 	rr := httptest.NewRecorder()
-	handler := http.HandlerFunc(healthCheckHandler)
+	handler := http.HandlerFunc(Handler)
 
 	handler.ServeHTTP(rr, req)
 

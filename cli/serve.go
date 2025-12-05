@@ -1,11 +1,15 @@
 package cli
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
 	"github.com/spf13/cobra"
+
+	"workctl/internal/handler/github"
+	"workctl/internal/handler/health"
+	"workctl/internal/server"
 )
 
 var serveCmd = &cobra.Command{
@@ -13,28 +17,34 @@ var serveCmd = &cobra.Command{
 	Short: "Start the workctl server",
 	Long:  `Starts an HTTP server on port 8080 with a health check endpoint at /healthz.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		// Initialize structured logger
+		logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+		slog.SetDefault(logger)
+
 		mux := http.NewServeMux()
-		mux.HandleFunc("/healthz", healthCheckHandler)
+		mux.HandleFunc("/healthz", health.Handler)
+		mux.Handle("/v1/github/webhooks", github.NewHandler(logger))
 
 		port := os.Getenv("PORT")
 		if port == "" {
 			port = "8080"
 		}
 		addr := ":" + port
-		cmd.Printf("Starting server on %s\n", addr)
-		if err := http.ListenAndServe(addr, mux); err != nil {
-			log.Fatalf("Server failed to start: %v", err)
+		logger.Info("Starting server", "addr", addr)
+
+		srv, err := server.New(addr, mux)
+		if err != nil {
+			logger.Error("Failed to initialize server", "error", err)
+			os.Exit(1)
+		}
+
+		if err := srv.Run(); err != nil {
+			logger.Error("Server failed", "error", err)
+			os.Exit(1)
 		}
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(serveCmd)
-}
-
-func healthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
-	if _, err := w.Write([]byte("OK")); err != nil {
-		log.Printf("failed to write health check response: %v", err)
-	}
 }
