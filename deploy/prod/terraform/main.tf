@@ -9,6 +9,20 @@ resource "google_cloud_run_v2_service" "default" {
       ports {
         container_port = 8080
       }
+      volume_mounts {
+        name       = "config-volume"
+        mount_path = "/etc/workctl"
+      }
+    }
+    volumes {
+      name = "config-volume"
+      secret {
+        secret = "workctl-config"
+        items {
+          version = "latest"
+          path    = "config.yaml"
+        }
+      }
     }
   }
 }
