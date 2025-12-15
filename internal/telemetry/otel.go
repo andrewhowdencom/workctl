@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"go.opentelemetry.io/contrib/instrumentation/runtime"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -26,6 +27,11 @@ func Setup(ctx context.Context, cfg *config.OtelConfig) (func(context.Context) e
 	if cfg.Exporter.Traces.Endpoint == "" && cfg.Exporter.Metrics.Endpoint == "" {
 		// Nothing to configure
 		return func(_ context.Context) error { return nil }, nil
+	}
+
+	// Start runtime metrics collection
+	if err := runtime.Start(runtime.WithMinimumReadMemStatsInterval(time.Second)); err != nil {
+		return nil, fmt.Errorf("failed to start runtime metrics: %w", err)
 	}
 
 	res, err := resource.New(ctx,

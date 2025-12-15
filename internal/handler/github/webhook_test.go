@@ -20,7 +20,7 @@ func TestHandler_ServeHTTP(t *testing.T) {
 	defer os.Unsetenv("GITHUB_WEBHOOK_SECRET")
 
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
-	h := NewHandler(logger)
+	h := NewHandler(WithLogger(logger))
 
 	tests := []struct {
 		name           string
@@ -52,6 +52,7 @@ func TestHandler_ServeHTTP(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			req := httptest.NewRequest("POST", "/v1/github/webhooks", strings.NewReader(tt.body))
 			req.Header.Set("Content-Type", "application/json")
+			req.Header.Set("X-GitHub-Event", "push") // Required for ParseWebHook
 			if tt.signature != "" {
 				req.Header.Set("X-Hub-Signature-256", tt.signature)
 			}

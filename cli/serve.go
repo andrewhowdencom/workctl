@@ -23,7 +23,7 @@ var serveCmd = &cobra.Command{
 
 		mux := http.NewServeMux()
 		mux.HandleFunc("/healthz", health.Handler)
-		mux.Handle("/v1/github/webhooks", github.NewHandler(logger))
+		mux.Handle("/v1/github/webhooks", github.NewHandler(github.WithLogger(logger)))
 
 		port := os.Getenv("PORT")
 		if port == "" {
