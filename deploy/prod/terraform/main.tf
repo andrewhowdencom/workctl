@@ -11,14 +11,14 @@ resource "google_secret_manager_secret_iam_member" "workctl_config_accessor" {
 
 resource "google_cloud_run_v2_service" "default" {
   name     = "workctl"
-  location = "europe-west10"
+  location = "europe-west1"
   ingress  = "INGRESS_TRAFFIC_ALL"
 
   template {
     service_account = google_service_account.workctl.email
 
     containers {
-      image = "europe-west10-docker.pkg.dev/andrewhowdencom/workctl/workctl:${var.image_tag}"
+      image = "europe-west1-docker.pkg.dev/andrewhowdencom/workctl/workctl:${var.image_tag}"
       ports {
         container_port = 8080
       }
@@ -54,7 +54,7 @@ resource "google_dns_managed_zone" "workctl" {
 }
 
 resource "google_cloud_run_domain_mapping" "default" {
-  location = "europe-west10"
+  location = "europe-west1"
   name     = "w.lahb.work"
 
   metadata {
