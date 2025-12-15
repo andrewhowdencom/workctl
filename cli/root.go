@@ -1,7 +1,12 @@
 package cli
 
 import (
+	"context"
+	"fmt"
 	"os"
+
+	"workctl/internal/config"
+	"workctl/internal/telemetry"
 
 	"github.com/spf13/cobra"
 )
@@ -17,9 +22,28 @@ It allows executing large chunks of work in series without checking in, enabling
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
+// Execute adds all child commands to the root command and sets flags appropriately.
+// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
+	cfg, err := config.Load()
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error loading config: %v\n", err)
+		os.Exit(1)
+	}
+
+	ctx := context.Background()
+	shutdown, err := telemetry.Setup(ctx, &cfg.Otel)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error setting up telemetry: %v\n", err)
+		os.Exit(1)
+	}
+	defer func() {
+		if err := shutdown(ctx); err != nil {
+			fmt.Fprintf(os.Stderr, "Error shutting down telemetry: %v\n", err)
+		}
+	}()
+
+	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		os.Exit(1)
 	}
 }
