@@ -46,3 +46,38 @@ resource "google_cloud_run_service_iam_member" "public" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
+
+resource "google_dns_managed_zone" "workctl" {
+  name        = "workctl-zone"
+  dns_name    = "w.lahb.work."
+  description = "DNS zone for workctl (w.lahb.work)"
+}
+
+resource "google_cloud_run_domain_mapping" "default" {
+  location = "europe-west10"
+  name     = "w.lahb.work"
+
+  metadata {
+    namespace = "andrewhowdencom"
+  }
+
+  spec {
+    route_name = "workctl"
+  }
+}
+
+locals {
+  domain_map_records = {
+    for r in google_cloud_run_domain_mapping.default.status[0].resource_records : r.type => r.rrdata...
+  }
+}
+
+resource "google_dns_record_set" "default" {
+  for_each = local.domain_map_records
+
+  name         = "w.lahb.work."
+  type         = each.key
+  ttl          = 300
+  managed_zone = google_dns_managed_zone.workctl.name
+  rrdatas      = each.value
+}
