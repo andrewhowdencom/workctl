@@ -66,18 +66,10 @@ resource "google_cloud_run_domain_mapping" "default" {
   }
 }
 
-locals {
-  domain_map_records = {
-    for r in google_cloud_run_domain_mapping.default.status[0].resource_records : r.type => r.rrdata...
-  }
-}
-
-resource "google_dns_record_set" "default" {
-  for_each = local.domain_map_records
-
+resource "google_dns_record_set" "cname" {
   name         = "w.lahb.work."
-  type         = each.key
+  type         = "CNAME"
   ttl          = 300
   managed_zone = google_dns_managed_zone.workctl.name
-  rrdatas      = each.value
+  rrdatas      = [for r in google_cloud_run_domain_mapping.default.status[0].resource_records : r.rrdata if r.type == "CNAME"]
 }
