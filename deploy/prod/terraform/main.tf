@@ -1,10 +1,3 @@
-resource "google_artifact_registry_repository" "default" {
-  location      = "europe-west10"
-  repository_id = "workctl"
-  description   = "Docker repository for workctl"
-  format        = "DOCKER"
-}
-
 resource "google_cloud_run_v2_service" "default" {
   name     = "workctl"
   location = "europe-west10"
@@ -18,8 +11,6 @@ resource "google_cloud_run_v2_service" "default" {
       }
     }
   }
-
-  depends_on = [google_artifact_registry_repository.default]
 }
 
 resource "google_cloud_run_service_iam_member" "public" {
