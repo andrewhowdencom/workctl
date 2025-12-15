@@ -1,9 +1,22 @@
+resource "google_service_account" "workctl" {
+  account_id   = "workctl"
+  display_name = "Workctl Service Account"
+}
+
+resource "google_secret_manager_secret_iam_member" "workctl_config_accessor" {
+  secret_id = "workctl-config"
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${google_service_account.workctl.email}"
+}
+
 resource "google_cloud_run_v2_service" "default" {
   name     = "workctl"
   location = "europe-west10"
   ingress  = "INGRESS_TRAFFIC_ALL"
 
   template {
+    service_account = google_service_account.workctl.email
+
     containers {
       image = "europe-west10-docker.pkg.dev/andrewhowdencom/workctl/workctl:${var.image_tag}"
       ports {
