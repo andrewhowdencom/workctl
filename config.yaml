@@ -3,7 +3,7 @@ otel:
   exporter:
     traces:
       # endpoint is the OTLP endpoint to send traces to.
-      endpoint: "localhost:4318" # Note: otlphttp exporter expects host:port by default if using WithEndpoint, or URL if code updated.
+      endpoint: "http://localhost:4318/v1/traces" # Full URL supported.
       # headers is a map of headers to send with OTLP trace requests.
       # For example, to authenticate with Grafana Cloud, you would use:
       # headers:
@@ -11,6 +11,6 @@ otel:
       headers: {}
     metrics:
       # endpoint is the OTLP endpoint to send metrics to.
-      endpoint: "localhost:4318"
+      endpoint: "http://localhost:4318/v1/metrics"
       # headers is a map of headers to send with OTLP metric requests.
       headers: {}

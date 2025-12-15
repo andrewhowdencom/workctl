@@ -53,11 +53,8 @@ func Setup(ctx context.Context, cfg *config.OtelConfig) (func(context.Context) e
 	// 1. Trace Provider
 	if cfg.Exporter.Traces.Endpoint != "" {
 		traceExporter, err := otlptracehttp.New(ctx,
-			otlptracehttp.WithEndpoint(cfg.Exporter.Traces.Endpoint),
+			otlptracehttp.WithEndpointURL(cfg.Exporter.Traces.Endpoint),
 			otlptracehttp.WithHeaders(cfg.Exporter.Traces.Headers),
-			// If not using TLS (e.g. localhost), Insecure might be needed.
-			// However, usually detailed configuration (TLS, etc.) is needed.
-			// For simplicity we'll assume the user provides a full valid endpoint.
 			// Ideally OTLP HTTP uses https by default unless http scheme is used?
 			// otlptracehttp handles scheme parsing if passed correctly?
 			// otlptracehttp.WithEndpoint expects "host:port", scheme is handled by WithInsecure or implied?
@@ -86,7 +83,7 @@ func Setup(ctx context.Context, cfg *config.OtelConfig) (func(context.Context) e
 	// 2. Metric Provider
 	if cfg.Exporter.Metrics.Endpoint != "" {
 		metricExporter, err := otlpmetrichttp.New(ctx,
-			otlpmetrichttp.WithEndpoint(cfg.Exporter.Metrics.Endpoint),
+			otlpmetrichttp.WithEndpointURL(cfg.Exporter.Metrics.Endpoint),
 			otlpmetrichttp.WithHeaders(cfg.Exporter.Metrics.Headers),
 		)
 		if err != nil {
