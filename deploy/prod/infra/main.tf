@@ -113,28 +113,30 @@ resource "google_cloud_run_service_iam_member" "public" {
 
 
 
-resource "google_cloud_run_domain_mapping" "default" {
-  location = "europe-west1"
-  name     = "w.lahb.work"
-
-  metadata {
-    namespace = "andrewhowdencom"
-  }
-
-  spec {
-    route_name = "workctl"
-  }
-}
-
-
-
-
-resource "google_dns_record_set" "cname" {
+resource "google_dns_record_set" "a" {
   name         = "w.lahb.work."
-  type         = "CNAME"
+  type         = "A"
   ttl          = 300
   managed_zone = google_dns_managed_zone.workctl.name
-  rrdatas      = [for r in google_cloud_run_domain_mapping.default.status[0].resource_records : r.rrdata if r.type == "CNAME"]
+  rrdatas = [
+    "216.239.32.21",
+    "216.239.34.21",
+    "216.239.36.21",
+    "216.239.38.21",
+  ]
+}
+
+resource "google_dns_record_set" "aaaa" {
+  name         = "w.lahb.work."
+  type         = "AAAA"
+  ttl          = 300
+  managed_zone = google_dns_managed_zone.workctl.name
+  rrdatas = [
+    "2001:4860:4802:32::15",
+    "2001:4860:4802:34::15",
+    "2001:4860:4802:36::15",
+    "2001:4860:4802:38::15",
+  ]
 }
 
 
