@@ -53,8 +53,8 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-        working-directory: deploy/prod/terraform
+        working-directory: deploy/prod/app
 
       - name: Terraform Apply
         run: terraform apply -auto-approve -var="image_tag=${{ steps.meta.outputs.version }}"
-        working-directory: deploy/prod/terraform
+        working-directory: deploy/prod/app

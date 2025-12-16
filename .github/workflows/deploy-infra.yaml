@@ -1,0 +1,35 @@
+name: Deploy Infrastructure
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy-infra:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - id: 'auth'
+        name: 'Authenticate to Google Cloud'
+        uses: 'google-github-actions/auth@v2'
+        with:
+          token_format: 'access_token'
+          workload_identity_provider: 'projects/422614898574/locations/global/workloadIdentityPools/github/providers/github'
+          service_account: 'github-actions-runner@andrewhowdencom.iam.gserviceaccount.com'
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        run: terraform init
+        working-directory: deploy/prod/infra
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
+        working-directory: deploy/prod/infra
