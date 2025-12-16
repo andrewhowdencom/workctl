@@ -4,14 +4,14 @@ resource "google_service_account" "workctl" {
 }
 
 
-RESOURCE "google_secret_manager_secret_iam_member" "workctl_config_accessor" {
+resource "google_secret_manager_secret_iam_member" "workctl_config_accessor" {
   secret_id = "workctl-config"
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.workctl.email}"
 }
 
 
-RESOURCE "google_dns_managed_zone" "workctl" {
+resource "google_dns_managed_zone" "workctl" {
   name        = "workctl-zone"
   dns_name    = "w.lahb.work."
   description = "DNS zone for workctl (w.lahb.work)"
