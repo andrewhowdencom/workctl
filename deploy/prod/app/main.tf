@@ -1,12 +1,9 @@
-resource "google_service_account" "workctl" {
-  account_id   = "workctl"
-  display_name = "Workctl Service Account"
+data "google_service_account" "workctl" {
+  account_id = "workctl"
 }
 
-resource "google_secret_manager_secret_iam_member" "workctl_config_accessor" {
-  secret_id = "workctl-config"
-  role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${google_service_account.workctl.email}"
+data "google_dns_managed_zone" "workctl" {
+  name = "workctl-zone"
 }
 
 resource "google_cloud_run_v2_service" "default" {
@@ -15,7 +12,7 @@ resource "google_cloud_run_v2_service" "default" {
   ingress  = "INGRESS_TRAFFIC_ALL"
 
   template {
-    service_account = google_service_account.workctl.email
+    service_account = data.google_service_account.workctl.email
 
     containers {
       image = "europe-west1-docker.pkg.dev/andrewhowdencom/workctl/workctl:${var.image_tag}"
@@ -40,6 +37,11 @@ resource "google_cloud_run_v2_service" "default" {
   }
 }
 
+import {
+  id = "projects/andrewhowdencom/locations/europe-west1/services/workctl"
+  to = google_cloud_run_v2_service.default
+}
+
 resource "google_cloud_run_service_iam_member" "public" {
   location = google_cloud_run_v2_service.default.location
   service  = google_cloud_run_v2_service.default.name
@@ -47,10 +49,9 @@ resource "google_cloud_run_service_iam_member" "public" {
   member   = "allUsers"
 }
 
-resource "google_dns_managed_zone" "workctl" {
-  name        = "workctl-zone"
-  dns_name    = "w.lahb.work."
-  description = "DNS zone for workctl (w.lahb.work)"
+import {
+  id = "projects/andrewhowdencom/locations/europe-west1/services/workctl/roles/run.invoker/allUsers"
+  to = google_cloud_run_service_iam_member.public
 }
 
 resource "google_cloud_run_domain_mapping" "default" {
@@ -66,10 +67,20 @@ resource "google_cloud_run_domain_mapping" "default" {
   }
 }
 
+import {
+  id = "locations/europe-west1/namespaces/andrewhowdencom/domainmappings/w.lahb.work"
+  to = google_cloud_run_domain_mapping.default
+}
+
 resource "google_dns_record_set" "cname" {
   name         = "w.lahb.work."
   type         = "CNAME"
   ttl          = 300
-  managed_zone = google_dns_managed_zone.workctl.name
+  managed_zone = data.google_dns_managed_zone.workctl.name
   rrdatas      = [for r in google_cloud_run_domain_mapping.default.status[0].resource_records : r.rrdata if r.type == "CNAME"]
+}
+
+import {
+  id = "projects/andrewhowdencom/managedZones/workctl-zone/rrsets/w.lahb.work./CNAME"
+  to = google_dns_record_set.cname
 }
