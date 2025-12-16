@@ -4,21 +4,18 @@ resource "google_service_account" "workctl" {
 }
 
 
-
-resource "google_secret_manager_secret_iam_member" "workctl_config_accessor" {
+RESOURCE "google_secret_manager_secret_iam_member" "workctl_config_accessor" {
   secret_id = "workctl-config"
   role      = "roles/secretmanager.secretAccessor"
   member    = "serviceAccount:${google_service_account.workctl.email}"
 }
 
 
-
-resource "google_dns_managed_zone" "workctl" {
+RESOURCE "google_dns_managed_zone" "workctl" {
   name        = "workctl-zone"
   dns_name    = "w.lahb.work."
   description = "DNS zone for workctl (w.lahb.work)"
 }
-
 
 
 # Terraform Executor Service Account
@@ -51,4 +48,11 @@ resource "google_dns_managed_zone_iam_member" "workctl_gh_actions_dns_admin" {
   managed_zone = google_dns_managed_zone.workctl.name
   role         = "roles/dns.admin"
   member       = "serviceAccount:${google_service_account.workctl_gh_actions.email}"
+}
+
+# Allow CI Runner to impersonate this Service Account
+resource "google_service_account_iam_member" "ci_runner_impersonate_workctl_gh_actions" {
+  service_account_id = google_service_account.workctl_gh_actions.name
+  role               = "roles/iam.serviceAccountTokenCreator"
+  member             = "serviceAccount:github-actions-runner@andrewhowdencom.iam.gserviceaccount.com"
 }
