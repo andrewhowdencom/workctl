@@ -50,9 +50,9 @@ resource "google_dns_managed_zone_iam_member" "workctl_gh_actions_dns_admin" {
   member       = "serviceAccount:${google_service_account.workctl_gh_actions.email}"
 }
 
-# Allow CI Runner to impersonate this Service Account
-resource "google_service_account_iam_member" "ci_runner_impersonate_workctl_gh_actions" {
+# Allow GitHub Actions to authenticate via Workload Identity Federation
+resource "google_service_account_iam_member" "gh_actions_wif_user" {
   service_account_id = google_service_account.workctl_gh_actions.name
-  role               = "roles/iam.serviceAccountTokenCreator"
-  member             = "serviceAccount:github-actions-runner@andrewhowdencom.iam.gserviceaccount.com"
+  role               = "roles/iam.workloadIdentityUser"
+  member             = "principalSet://iam.googleapis.com/projects/422614898574/locations/global/workloadIdentityPools/github/attribute.repository/andrewhowdencom/workctl"
 }
