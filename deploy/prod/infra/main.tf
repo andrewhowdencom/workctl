@@ -30,6 +30,8 @@ resource "google_project_iam_member" "workctl_gh_actions_project_roles" {
   for_each = toset([
     "roles/run.admin",
     "roles/storage.admin",
+    "roles/secretmanager.admin",
+    "roles/dns.admin",
   ])
   project = "andrewhowdencom"
   role    = each.key
