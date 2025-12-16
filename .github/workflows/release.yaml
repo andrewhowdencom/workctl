@@ -48,13 +48,9 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-
-      - name: Terraform Init
-        run: terraform init
-        working-directory: deploy/prod/app
-
-      - name: Terraform Apply
-        run: terraform apply -auto-approve -var="image_tag=${{ steps.meta.outputs.version }}"
-        working-directory: deploy/prod/app
+      - name: Deploy to Cloud Run
+        uses: google-github-actions/deploy-cloudrun@v2
+        with:
+          service: workctl
+          region: europe-west1
+          image: europe-west1-docker.pkg.dev/andrewhowdencom/workctl/workctl:${{ steps.meta.outputs.version }}

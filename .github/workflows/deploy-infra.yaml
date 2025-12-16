@@ -30,6 +30,14 @@ jobs:
         run: terraform init
         working-directory: deploy/prod/infra
 
-      - name: Terraform Apply
+      - name: Terraform Apply Infra
         run: terraform apply -auto-approve
         working-directory: deploy/prod/infra
+
+      - name: Terraform Init App
+        run: terraform init
+        working-directory: deploy/prod/app
+
+      - name: Terraform Apply App
+        run: terraform apply -auto-approve
+        working-directory: deploy/prod/app
