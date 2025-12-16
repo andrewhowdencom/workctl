@@ -98,10 +98,7 @@ resource "google_cloud_run_v2_service" "default" {
   }
 }
 
-import {
-  id = "projects/andrewhowdencom/locations/europe-west1/services/workctl"
-  to = google_cloud_run_v2_service.default
-}
+
 
 
 resource "google_cloud_run_service_iam_member" "public" {
@@ -111,10 +108,7 @@ resource "google_cloud_run_service_iam_member" "public" {
   member   = "allUsers"
 }
 
-import {
-  id = "projects/andrewhowdencom/locations/europe-west1/services/workctl/roles/run.invoker/allUsers"
-  to = google_cloud_run_service_iam_member.public
-}
+
 
 
 resource "google_cloud_run_domain_mapping" "default" {
@@ -130,10 +124,7 @@ resource "google_cloud_run_domain_mapping" "default" {
   }
 }
 
-import {
-  id = "locations/europe-west1/namespaces/andrewhowdencom/domainmappings/w.lahb.work"
-  to = google_cloud_run_domain_mapping.default
-}
+
 
 
 resource "google_dns_record_set" "cname" {
@@ -144,7 +135,4 @@ resource "google_dns_record_set" "cname" {
   rrdatas      = [for r in google_cloud_run_domain_mapping.default.status[0].resource_records : r.rrdata if r.type == "CNAME"]
 }
 
-import {
-  id = "projects/andrewhowdencom/managedZones/workctl-zone/rrsets/w.lahb.work./CNAME"
-  to = google_dns_record_set.cname
-}
+
