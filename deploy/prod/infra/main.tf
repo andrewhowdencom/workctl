@@ -3,10 +3,7 @@ resource "google_service_account" "workctl" {
   display_name = "Workctl Service Account"
 }
 
-import {
-  id = "projects/andrewhowdencom/serviceAccounts/workctl@andrewhowdencom.iam.gserviceaccount.com"
-  to = google_service_account.workctl
-}
+
 
 resource "google_secret_manager_secret_iam_member" "workctl_config_accessor" {
   secret_id = "workctl-config"
@@ -14,10 +11,7 @@ resource "google_secret_manager_secret_iam_member" "workctl_config_accessor" {
   member    = "serviceAccount:${google_service_account.workctl.email}"
 }
 
-import {
-  id = "projects/andrewhowdencom/secrets/workctl-config/roles/secretmanager.secretAccessor/serviceAccount:workctl@andrewhowdencom.iam.gserviceaccount.com"
-  to = google_secret_manager_secret_iam_member.workctl_config_accessor
-}
+
 
 resource "google_dns_managed_zone" "workctl" {
   name        = "workctl-zone"
@@ -25,10 +19,7 @@ resource "google_dns_managed_zone" "workctl" {
   description = "DNS zone for workctl (w.lahb.work)"
 }
 
-import {
-  id = "projects/andrewhowdencom/managedZones/workctl-zone"
-  to = google_dns_managed_zone.workctl
-}
+
 
 # Terraform Executor Service Account
 resource "google_service_account" "workctl_gh_actions" {
